@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Parcelas de Contrato PF - OPAS</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-section {
+            background: #f8f9ff;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e3e8ff;
+        }
+
+        .form-section h2 {
+            color: #6c5ce7;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .form-grid-single {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            padding: 12px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background: white;
+            width: 100%;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .editable {
+            background-color: #fff3cd !important;
+            border-color: #ffc107 !important;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .results-section h3 {
+            color: #6c5ce7;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #6c5ce7;
+        }
+
+        .info-item strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-item span {
+            color: #6c5ce7;
+            font-weight: 600;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        tr:hover {
+            background: #f8f9ff;
+        }
+
+        .total-row {
+            background: #f1f5f9 !important;
+            font-weight: 600;
+        }
+
+        .total-row td {
+            border-top: 2px solid #6c5ce7;
+        }
+
+        .status-green {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-red {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .status-black {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #f8f9ff 0%, #e3e8ff 100%);
+            border-radius: 12px;
+            padding: 30px;
+            border: 2px solid #6c5ce7;
+        }
+
+        .summary-section h3 {
+            color: #6c5ce7;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .summary-item strong {
+            display: block;
+            color: #2d3748;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .summary-item .value {
+            color: #6c5ce7;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+        }
+
+        .editable-cell {
+            background-color: #fff3cd !important;
+            border: 1px solid #ffc107 !important;
+            border-radius: 4px;
+            padding: 8px;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .editable-cell:focus {
+            outline: none;
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 2px rgba(108, 92, 231, 0.1);
+        }
+
+        @media (max-width: 1024px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 20px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+  <link rel="manifest" href="manifest.json">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker registrado com sucesso!'))
+        .catch(error => console.error('Erro ao registrar o Service Worker:', error));
+    }
+  </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Cálculo de Parcelas de Contrato PF</h1>
+            <p>Sistema de cálculo automático para contratos de pessoa física - OPAS</p>
+        </div>
+
+        <div class="content">
+            <div class="form-section">
+                <h2>
+                    <span class="icon">⚙️</span>
+                    Dados do Contrato
+                </h2>
+                
+                <!-- Campo Nome do Colaborador em linha separada -->
+                <div class="form-grid-single">
+                    <div class="form-group">
+                        <label for="nomeColaborador">Nome do Colaborador:</label>
+                        <input type="text" id="nomeColaborador" placeholder="Digite o nome completo do colaborador">
+                    </div>
+                </div>
+
+                <!-- Demais campos em linha -->
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="meses">Nº de meses:</label>
+                        <input type="number" id="meses" min="1" max="11" placeholder="Ex: 6">
+                    </div>
+                    <div class="form-group">
+                        <label for="inicio">Data de início:</label>
+                        <input type="date" id="inicio">
+                    </div>
+                    <div class="form-group">
+                        <label for="refMensal">Referência mensal (R$):</label>
+                        <input type="text" id="refMensal" placeholder="Ex: R$ 11.000,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="numProdutos">Nº de produtos:</label>
+                        <input type="number" id="numProdutos" min="1" max="6" placeholder="Ex: 3">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="gerarCalculo()">
+                        <span>🚀</span>
+                        Gerar Cálculo
+                    </button>
+                    <button class="btn btn-secondary" onclick="limparCampos()">
+                        <span>🗑️</span>
+                        Limpar Dados
+                    </button>
+                    <button class="btn btn-success" onclick="baixarPDF()" id="btnPDF" style="display: none;">
+                        <span>📄</span>
+                        Baixar PDF
+                    </button>
+                </div>
+            </div>
+
+            <div id="infoContrato" class="results-section" style="display: none;">
+                <h3>
+                    <span class="icon">📋</span>
+                    Informações Gerais do Contrato
+                </h3>
+                <div id="infoContratoContent"></div>
+            </div>
+
+            <div id="tabelaParcelas" class="results-section" style="display: none;">
+                <h3>
+                    <span class="icon">📊</span>
+                    Simulação das Parcelas
+                </h3>
+                <div id="tabelaParcelasContent"></div>
+            </div>
+
+            <div id="resumoFinal" class="summary-section" style="display: none;">
+                <h3>📈 Resumo Definitivo</h3>
+                <div id="resumoFinalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function ajustarDataParaDiaUtil(data) {
+            const novaData = new Date(data);
+            while (novaData.getDay() === 0 || novaData.getDay() === 6) {
+                novaData.setDate(novaData.getDate() + 1);
+            }
+            return novaData;
+        }
+
+        function formatarDataBR(date) {
+            return ('0' + date.getDate()).slice(-2) + '/' +
+                   ('0' + (date.getMonth() + 1)).slice(-2) + '/' +
+                   date.getFullYear();
+        }
+
+        function parseValorReal(valorStr) {
+            if (!valorStr) return 0;
+            return parseFloat(valorStr.replace(/[R$\s.]/g, '').replace(',', '.'));
+        }
+
+        function formatarValorReal(valorNum) {
+            return valorNum.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function formatarCampoMoeda(campo) {
+            let valor = campo.value.replace(/\D/g, '');
+            if (valor === '') {
+                campo.value = '';
+                return;
+            }
+            valor = (parseInt(valor, 10) / 100).toFixed(2);
+            valor = valor.replace('.', ',');
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+            campo.value = 'R$ ' + valor;
+        }
+
+        function formatarCelulaMoeda(celula) {
+            let valor = celula.innerText.replace(/\D/g, '');
+            if (valor === '') {
+                celula.innerText = 'R$ 0,00';
+                return;
+            }
+            valor = (parseInt(valor, 10) / 100).toFixed(2);
+            valor = valor.replace('.', ',');
+            valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.');
+            celula.innerText = 'R$ ' + valor;
+        }
+
+        function calcularDatasDosProdutos(dataInicioOriginal, numProdutos, diasContrato) {
+            const datas = [];
+            
+            // Ajustar data de início apenas se for fim de semana
+            let dataInicioAjustada = new Date(dataInicioOriginal);
+            if (dataInicioOriginal.getDay() === 0 || dataInicioOriginal.getDay() === 6) {
+                dataInicioAjustada = ajustarDataParaDiaUtil(dataInicioOriginal);
+            }
+            
+            // Definir intervalos conforme especificação
+            const intervalos = {
+                1: [],
+                2: [30],
+                3: [30, 60],
+                4: [30, 60, 58],
+                5: [30, 60, 58, 62],
+                6: [30, 60, 58, 62, 59]
+            };
+
+            const intervalosProduto = intervalos[numProdutos] || [];
+            
+            if (numProdutos === 1) {
+                // Para 1 produto, a data é a mesma do encerramento
+                const dataFim = new Date(dataInicioAjustada);
+                dataFim.setDate(dataFim.getDate() + diasContrato);
+                datas.push(ajustarDataParaDiaUtil(dataFim));
+            } else {
+                // Para múltiplos produtos
+                let dataAtual = new Date(dataInicioAjustada);
+                
+                // Calcular datas dos produtos intermediários
+                for (let i = 0; i < numProdutos - 1; i++) {
+                    dataAtual.setDate(dataAtual.getDate() + intervalosProduto[i]);
+                    datas.push(ajustarDataParaDiaUtil(new Date(dataAtual)));
+                }
+                
+                // Último produto sempre na data de encerramento
+                const dataFim = new Date(dataInicioAjustada);
+                dataFim.setDate(dataFim.getDate() + diasContrato);
+                datas.push(ajustarDataParaDiaUtil(dataFim));
+            }
+
+            return datas;
+        }
+
+        function gerarCalculo() {
+            const nomeColaborador = document.getElementById('nomeColaborador').value.trim();
+            const meses = parseInt(document.getElementById('meses').value);
+            const dataInicioInput = document.getElementById('inicio').value;
+            const refMensal = parseValorReal(document.getElementById('refMensal').value);
+            const numProdutos = parseInt(document.getElementById('numProdutos').value);
+
+            if (!nomeColaborador || !meses || !dataInicioInput || !refMensal || !numProdutos) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            // CORREÇÃO DEFINITIVA: Criar data corretamente sem problemas de timezone
+            const partesData = dataInicioInput.split('-');
+            const ano = parseInt(partesData[0]);
+            const mes = parseInt(partesData[1]) - 1; // Mês é 0-indexado
+            const dia = parseInt(partesData[2]);
+
+            // Criar data original exatamente como preenchida
+            const dataInicioOriginal = new Date(ano, mes, dia);
+
+            // Data de início para exibição: SEMPRE a original, exceto se for fim de semana
+            let dataInicioExibicao = new Date(dataInicioOriginal);
+            if (dataInicioOriginal.getDay() === 0 || dataInicioOriginal.getDay() === 6) {
+                dataInicioExibicao = ajustarDataParaDiaUtil(dataInicioOriginal);
+            }
+
+            const diasContrato = meses * 30;
+            const valorTotal = refMensal * meses;
+
+            // Calcular data de fim
+            const dataFim = new Date(dataInicioExibicao);
+            dataFim.setDate(dataFim.getDate() + diasContrato);
+            const dataFimAjustada = ajustarDataParaDiaUtil(dataFim);
+
+            // Percentuais conforme especificação corrigida
+            const percentuais = {
+                1: [100.00],
+                2: [49.00, 51.00],
+                3: [31.67, 33.33, 35.00],
+                4: [24.29, 25.43, 24.57, 25.71],
+                5: [19.33, 19.78, 19.56, 20.44, 20.89],
+                6: [16.18, 16.91, 16.55, 16.73, 16.36, 17.27]
+            }[numProdutos];
+
+            // Calcular datas dos produtos
+            const datasProdutos = calcularDatasDosProdutos(dataInicioOriginal, numProdutos, diasContrato);
+
+            // Mostrar informações gerais
+            document.getElementById('infoContratoContent').innerHTML = `
+                <div class="info-grid">
+                    <div class="info-item">
+                        <strong>Data de Início:</strong>
+                        <span>${formatarDataBR(dataInicioExibicao)}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Data de Término:</strong>
+                        <span>${formatarDataBR(dataFimAjustada)}</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Total de dias do contrato:</strong>
+                        <span>${diasContrato} dias</span>
+                    </div>
+                    <div class="info-item">
+                        <strong>Valor total do contrato:</strong>
+                        <span>${formatarValorReal(valorTotal)}</span>
+                    </div>
+                </div>
+            `;
+
+            // Gerar tabela de parcelas
+            let tabela = `
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Data de Entrega</th>
+                                <th>Valor (%)</th>
+                                <th>Valor (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let somaPercentuais = 0;
+            for (let i = 0; i < numProdutos; i++) {
+                const perc = percentuais[i];
+                const val = (perc / 100) * valorTotal;
+                somaPercentuais += perc;
+                tabela += `
+                    <tr>
+                        <td><strong>Produto ${i + 1}</strong></td>
+                        <td contenteditable="true" class="editable-cell" oninput="atualizarTabela()">${formatarDataBR(datasProdutos[i])}</td>
+                        <td contenteditable="true" class="editable-cell" oninput="atualizarTabela()">${perc.toFixed(2).replace('.', ',')}%</td>
+                        <td contenteditable="true" class="editable-cell" oninput="formatarCelulaMoeda(this); atualizarTabela();">${formatarValorReal(val)}</td>
+                    </tr>
+                `;
+            }
+
+            tabela += `
+                        <tr class="total-row">
+                            <td colspan="2"><strong>TOTAL:</strong></td>
+                            <td id="somaPerc" class="status-green">${somaPercentuais.toFixed(2).replace('.', ',')}%</td>
+                            <td id="somaValor" class="status-green">${formatarValorReal(valorTotal)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            `;
+
+            document.getElementById('tabelaParcelasContent').innerHTML = tabela;
+
+            // Gerar resumo final
+            document.getElementById('resumoFinalContent').innerHTML = `
+                <div class="summary-grid">
+                    <div class="summary-item">
+                        <strong>Período do Contrato</strong>
+                        <div class="value">${meses} ${meses === 1 ? 'mês' : 'meses'}</div>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Total de Produtos</strong>
+                        <div class="value">${numProdutos} ${numProdutos === 1 ? 'produto' : 'produtos'}</div>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Referência Mensal</strong>
+                        <div class="value">${formatarValorReal(refMensal)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Valor Total</strong>
+                        <div class="value">${formatarValorReal(valorTotal)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Vigência</strong>
+                        <div class="value">${formatarDataBR(dataInicioExibicao)} a ${formatarDataBR(dataFimAjustada)}</div>
+                    </div>
+                    <div class="summary-item">
+                        <strong>Duração</strong>
+                        <div class="value">${diasContrato} dias</div>
+                    </div>
+                </div>
+            `;
+
+            // Mostrar seções
+            document.getElementById('infoContrato').style.display = 'block';
+            document.getElementById('tabelaParcelas').style.display = 'block';
+            document.getElementById('resumoFinal').style.display = 'block';
+            document.getElementById('btnPDF').style.display = 'flex';
+
+            atualizarTabela();
+        }
+
+        function atualizarTabela() {
+            const linhas = document.querySelectorAll('#tabelaParcelasContent table tbody tr');
+            if (linhas.length === 0) return;
+
+            let somaPerc = 0;
+            let somaValor = 0;
+            const valorTotal = parseValorReal(document.getElementById('refMensal').value) *
+                             parseInt(document.getElementById('meses').value);
+
+            // Processar todas as linhas exceto a última (total)
+            for (let i = 0; i < linhas.length - 1; i++) {
+                const percCel = linhas[i].cells[2];
+                const valCel = linhas[i].cells[3];
+
+                let perc = parseFloat(percCel.innerText.replace('%', '').replace(',', '.')) || 0;
+                let val = parseValorReal(valCel.innerText) || 0;
+
+                // Sincronizar percentual e valor
+                if (document.activeElement === percCel) {
+                    val = valorTotal * perc / 100;
+                    valCel.innerText = formatarValorReal(val);
+                } else if (document.activeElement === valCel) {
+                    perc = (val / valorTotal) * 100;
+                    percCel.innerText = perc.toFixed(2).replace('.', ',') + '%';
+                }
+
+                somaPerc += perc;
+                somaValor += val;
+            }
+
+            // Atualizar totais
+            const percClass = Math.abs(somaPerc - 100) < 0.01 ? 'status-green' :
+                             (somaPerc > 100 ? 'status-red' : 'status-black');
+            const valClass = Math.abs(somaValor - valorTotal) < 1 ? 'status-green' :
+                            (somaValor > valorTotal ? 'status-red' : 'status-black');
+
+            document.getElementById('somaPerc').className = percClass;
+            document.getElementById('somaValor').className = valClass;
+            document.getElementById('somaPerc').innerHTML = somaPerc.toFixed(2).replace('.', ',') + '%';
+            document.getElementById('somaValor').innerHTML = formatarValorReal(somaValor);
+        }
+
+        function limparCampos() {
+            document.getElementById('nomeColaborador').value = '';
+            document.getElementById('meses').value = '';
+            document.getElementById('inicio').value = '';
+            document.getElementById('refMensal').value = '';
+            document.getElementById('numProdutos').value = '';
+            
+            document.getElementById('infoContrato').style.display = 'none';
+            document.getElementById('tabelaParcelas').style.display = 'none';
+            document.getElementById('resumoFinal').style.display = 'none';
+            document.getElementById('btnPDF').style.display = 'none';
+        }
+
+        async function baixarPDF() {
+            const nomeColaborador = document.getElementById('nomeColaborador').value.trim();
+            
+            if (!nomeColaborador) {
+                alert('Por favor, preencha o nome do colaborador antes de gerar o PDF.');
+                return;
+            }
+
+            // Criar elemento temporário para o PDF
+            const pdfContent = document.createElement('div');
+            pdfContent.style.cssText = `
+                font-family: Arial, sans-serif;
+                color: #333;
+                line-height: 1.4;
+                padding: 20px;
+                background: white;
+                font-size: 12px;
+            `;
+
+            // Header
+            pdfContent.innerHTML = `
+                <div style="text-align: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 2px solid #6c5ce7;">
+                    <h1 style="color: #6c5ce7; margin: 0; font-size: 20px;">💰 Cálculo de Parcelas de Contrato PF</h1>
+                    <p style="margin: 5px 0 0 0; color: #666;">Sistema de cálculo automático para contratos de pessoa física - OPAS</p>
+                </div>
+
+                <!-- Dados do Contrato - Apenas Nome -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #6c5ce7; margin-bottom: 10px; font-size: 14px;">⚙️ Dados do Contrato</h3>
+                    <div style="background: #f8f9ff; padding: 15px; border-radius: 8px; border-left: 4px solid #6c5ce7;">
+                        <strong>Nome do Colaborador:</strong> ${nomeColaborador}
+                    </div>
+                </div>
+
+                <!-- Informações Gerais -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #6c5ce7; margin-bottom: 10px; font-size: 14px;">📋 Informações Gerais do Contrato</h3>
+                    ${document.getElementById('infoContratoContent').innerHTML}
+                </div>
+
+                <!-- Simulação das Parcelas -->
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #6c5ce7; margin-bottom: 10px; font-size: 14px;">📊 Simulação das Parcelas</h3>
+                    ${document.getElementById('tabelaParcelasContent').innerHTML}
+                </div>
+
+                <!-- Resumo Definitivo -->
+                <div>
+                    <h3 style="color: #6c5ce7; margin-bottom: 10px; font-size: 14px;">📈 Resumo Definitivo</h3>
+                    ${document.getElementById('resumoFinalContent').innerHTML}
+                </div>
+            `;
+
+            // Configurações do PDF
+            const opt = {
+                margin: [10, 10, 10, 10],
+                filename: `Calculos_ContratoOPAS_${nomeColaborador.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+
+            // Gerar e baixar PDF
+            try {
+                await html2pdf().set(opt).from(pdfContent).save();
+            } catch (error) {
+                console.error('Erro ao gerar PDF:', error);
+                alert('Erro ao gerar PDF. Tente novamente.');
+            }
+        }
+
+        // Adicionar formatação automática de moeda ao campo de referência mensal
+        document.getElementById('refMensal').addEventListener('input', function() {
+            formatarCampoMoeda(this);
+        });
+    </script>
+</body>
+</html>
+
